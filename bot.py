@@ -1,15 +1,15 @@
 import os
-import anthropic
 import requests
 from flask import Flask, request, jsonify
+from groq import Groq
 
 app = Flask(__name__)
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
-client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+client = Groq(api_key=GROQ_API_KEY)
 
 # Inventario de demos (luego conectamos con Google Sheets)
 INVENTARIO = """
@@ -38,14 +38,16 @@ def send_message(chat_id, text):
     })
 
 
-def ask_claude(user_message):
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
+def ask_groq(user_message):
+    response = client.chat.completions.create(
+        model="llama3-8b-8192",
         max_tokens=400,
-        system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": user_message}]
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_message}
+        ]
     )
-    return response.content[0].text
+    return response.choices[0].message.content
 
 
 @app.route("/webhook", methods=["POST"])
@@ -65,7 +67,7 @@ def webhook():
                 "¿En qué te puedo ayudar?"
             )
         elif text:
-            respuesta = ask_claude(text)
+            respuesta = ask_groq(text)
             send_message(chat_id, respuesta)
 
     return jsonify({"ok": True})
