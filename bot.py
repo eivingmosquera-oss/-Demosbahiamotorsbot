@@ -11,7 +11,6 @@ TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 client = Groq(api_key=GROQ_API_KEY)
 
-# Inventario de demos (luego conectamos con Google Sheets)
 INVENTARIO = """
 • Geely Coolray (AB-1234) — Blanco — Sucursal: RJA — Responsable: Carlos Méndez — Estado: Disponible
 • Geely Emgrand (CD-5678) — Gris — Sucursal: C50 — Responsable: Ana Torres — Estado: En préstamo
@@ -75,9 +74,9 @@ def webhook():
 
 @app.route("/", methods=["GET"])
 def index():
-    return "DemoBot Bay Motors - Activo ✅"
+    return "DemoBot Bay Motors - Activo ✅", 200
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
